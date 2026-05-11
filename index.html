@@ -118,7 +118,6 @@
             margin-top: 5px;
         }
 
-        /* 表格區 */
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         th { background-color: var(--border-color); color: white; padding: 15px 5px; font-size: 1.1rem; }
         td { border-bottom: 1px solid rgba(166, 124, 82, 0.3); padding: 18px 5px; text-align: center; font-size: 1.1rem; }
@@ -154,14 +153,11 @@
             cursor: pointer;
         }
 
-        /* 手機版適配：不隱藏欄位，但縮減文字與間距 */
         @media screen and (max-width: 600px) {
             .container { max-width: 98%; padding: 10px; }
             h2 { font-size: 1.8rem; }
             .add-form { grid-template-columns: 1fr; padding: 15px; }
             .btn-add { grid-column: span 1; }
-
-            /* 縮減表格寬度 */
             th, td { padding: 10px 1px; font-size: 0.95rem; }
             .boss-name { font-size: 1rem; }
             .kill-time { font-size: 0.9rem; }
@@ -180,9 +176,9 @@
     </div>
     
     <div class="preset-buttons">
-        <button class="btn-preset" onclick="setPreset('黑人馬王', 10)">黑人馬</button>
-        <button class="btn-preset" onclick="setPreset('噴火龍', 10)">噴火龍</button>
-        <button class="btn-preset" onclick="setPreset('格瑞芬多', 10)">格瑞芬</button>
+        <button class="btn-preset" onclick="setPreset('黑人馬王', 9)">黑人馬</button>
+        <button class="btn-preset" onclick="setPreset('噴火龍', 9)">噴火龍</button>
+        <button class="btn-preset" onclick="setPreset('格瑞芬多', 9)">格瑞芬</button>
     </div>
 
     <div class="add-form">
@@ -242,20 +238,33 @@
     }
 
     function killBoss(id) { db.ref('bosses/' + id).update({ lastKill: Date.now() }); }
-    function deleteBoss(id) { db.ref('bosses/' + id).remove(); }
+    function deleteBoss(id) { 
+        // 刪除前先停止該 ID 的本地定時器
+        if(activeTimers[id]) {
+            clearInterval(activeTimers[id]);
+            delete activeTimers[id];
+        }
+        db.ref('bosses/' + id).remove(); 
+    }
 
+    // 監聽數據更新
     db.ref('bosses').on('value', (snap) => {
         const data = snap.val();
         const tbody = document.getElementById('bossList');
-        for (let t in activeTimers) clearInterval(activeTimers[t]);
+        
+        // 徹底清除現有定時器，防止重複
+        Object.keys(activeTimers).forEach(id => clearInterval(activeTimers[id]));
         activeTimers = {};
-        tbody.innerHTML = "";
+        
+        tbody.innerHTML = ""; // 清空表格避免刷新重複
+
         if (!data) return;
 
         let arr = [];
         for (let id in data) {
             arr.push({ id, ...data[id], next: data[id].lastKill + (data[id].respawnMin * 60000) });
         }
+        // 按重生時間排序
         arr.sort((a, b) => a.next - b.next);
 
         arr.forEach((b) => {
@@ -280,13 +289,17 @@
             const el = document.getElementById(`timer-${id}`);
             if (!el) return;
             const now = Date.now();
-            if (now - lastKill > 1200000) { deleteBoss(id); return; }
+            
+            // 超過 20 分鐘自動移除 (20 * 60 * 1000 = 1200000)
+            if (now - lastKill > 1200000) { 
+                deleteBoss(id); 
+                return; 
+            }
 
             const diff = next - now;
             if (diff <= 0) {
                 el.innerText = "★ 已重生 ★";
                 el.className = "status-ready-text"; 
-                clearInterval(activeTimers[id]);
             } else {
                 const m = Math.floor(diff / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
