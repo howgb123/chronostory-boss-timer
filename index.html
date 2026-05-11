@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楓之谷打王即時同步計時器</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; background: #eef2f3; padding: 10px; }
+        .container { max-width: 950px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-top: 0; }
+        .preset-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-preset { background: #2ecc71; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .add-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; align-items: flex-end; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 14px; font-weight: bold; color: #555; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100px; }
+        #bossName { width: 140px; }
+        button { cursor: pointer; font-weight: bold; border-radius: 5px; border: none; }
+        .btn-add { background: #e74c3c; color: white; height: 40px; padding: 0 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: center; }
+        th { background: #34495e; color: white; }
+        .btn-re-kill { background: #3498db; color: white; padding: 8px 12px; margin-bottom: 5px; display: block; width: 100%; }
+        .btn-del { background: #95a5a6; color: white; padding: 5px 10px; font-size: 12px; width: 100%; }
+        .timer-text { font-size: 18px; font-weight: bold; color: #2980b9; }
+        .kill-time-text { color: #666; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Boss 重生同步儀表板</h2>
+    
+    <div class="preset-buttons">
+        <span style="width:100%; font-weight:bold; margin-bottom:5px;">快捷填入：</span>
+        <button class="btn-preset" onclick="setPreset('黑人馬王', 10)">黑人馬王</button>
+        <button class="btn-preset" onclick="setPreset('噴火龍', 10)">噴火龍</button>
+        <button class="btn-preset" onclick="setPreset('格瑞芬多', 10)">格瑞芬多</button>
+    </div>
+
+    <div class="add-form">
+        <div class="form-group"><label>王名</label><input type="text" id="bossName"></div>
+        <div class="form-group"><label>頻道</label><input type="number" id="channel"></div>
+        <div class="form-group"><label>重生(分)</label><input type="number" id="respawnMin"></div>
+        <button class="btn-add" onclick="addNewBoss()">擊殺 (新增紀錄)</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>王名</th>
+                <th>頻道</th>
+                <th>重生間隔</th>
+                <th>擊殺時間</th>
+                <th>重生倒數</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="bossList"></tbody>
+    </table>
+    <p style="font-size: 11px; color: #999; text-align: right; margin-top: 10px;">* 擊殺超過 20 分鐘的紀錄將自動清除</p>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyD9u-zMApkgAM43ksauoe0sh_vmubOZ9oE",
+        databaseURL: "https://msw-chrono-boss-timer-default-rtdb.firebaseio.com",
+        projectId: "msw-chrono-boss-timer"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let activeTimers = {};
+
+    function setPreset(name, min) {
+        document.getElementById('bossName').value = name;
+        document.getElementById('respawnMin').value = min;
+        document.getElementById('channel').focus();
+    }
+
+    function formatTime(timestamp) {
+        if (!timestamp) return "-";
+        const date = new Date(timestamp);
+        return date.getHours().toString().padStart(2, '0') + ":" + 
+               date.getMinutes().toString().padStart(2, '0') + ":" + 
+               date.getSeconds().toString().padStart(2, '0');
+    }
+
+    function addNewBoss() {
+        const name = document.getElementById('bossName').value;
+        const ch = document.getElementById('channel').value;
+        const time = document.getElementById('respawnMin').value;
+        if(!name || !ch || !time) return alert("資訊填完整！");
+        db.ref('bosses').push({ name, ch, respawnMin: parseInt(time), lastKill: Date.now() });
+        document.getElementById('bossName').value = "";
+        document.getElementById('channel').value = "";
+        document.getElementById('respawnMin').value = "";
+    }
+
+    function killBoss(id) {
+        db.ref('bosses/' + id).update({ lastKill: Date.now() });
+    }
+
+    function deleteBoss(id) {
+        db.ref('bosses/' + id).remove();
+    }
+
+    db.ref('bosses').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const tbody = document.getElementById('bossList');
+        for (let t in activeTimers) clearInterval(activeTimers[t]);
+        activeTimers = {};
+        tbody.innerHTML = "";
+        if (!data) return;
+
+        for (let id in data) {
+            const b = data[id];
+            const nextSpawn = b.lastKill + (b.respawnMin * 60000);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${b.name}</strong></td>
+                <td>${b.ch} 頻</td>
+                <td>${b.respawnMin} 分</td>
+                <td class="kill-time-text">${formatTime(b.lastKill)}</td>
+                <td class="timer-text" id="timer-${id}">...</td>
+                <td>
+                    <button class="btn-re-kill" onclick="killBoss('${id}')">再次擊殺</button>
+                    <button class="btn-del" onclick="deleteBoss('${id}')">刪除</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+            startTimer(id, nextSpawn, b.lastKill);
+        }
+    });
+
+    function startTimer(id, nextSpawn, lastKill) {
+        const autoDeleteLimit = 20 * 60000;
+        function update() {
+            const el = document.getElementById(`timer-${id}`);
+            if (!el) return;
+            const now = Date.now();
+            if (now - lastKill > autoDeleteLimit) {
+                clearInterval(activeTimers[id]);
+                deleteBoss(id);
+                return;
+            }
+            const diff = nextSpawn - now;
+            if (diff <= 0) {
+                el.innerText = "★ 已重生 ★";
+                el.style.color = "red";
+            } else {
+                const m = Math.floor(diff / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                el.innerText = `${m}分${s}秒`;
+                el.style.color = "#2980b9";
+            }
+        }
+        update();
+        activeTimers[id] = setInterval(update, 1000);
+    }
+</script>
+</body>
+</html>
