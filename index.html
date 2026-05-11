@@ -20,13 +20,13 @@
             font-family: "Microsoft JhengHei", sans-serif;
             background-color: #dfd3c3;
             background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png');
-            padding: 8px;
+            padding: 5px;
             margin: 0;
             color: var(--text-main);
         }
 
         .container {
-            max-width: 95%;
+            max-width: 900px;
             margin: 5px auto;
             background-color: var(--bg-color);
             padding: 15px;
@@ -35,7 +35,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
-        /* 標題區：圖示與文字對齊 */
+        /* 標題區 */
         .header-area {
             display: flex;
             align-items: center;
@@ -47,8 +47,8 @@
         }
 
         .header-icon {
-            width: 65px;
-            height: 65px;
+            width: 60px;
+            height: 60px;
             object-fit: contain;
         }
 
@@ -71,19 +71,19 @@
             background-color: #8d6e63;
             color: white;
             border: none;
-            padding: 15px 10px;
+            padding: 12px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             flex-grow: 1;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
-        /* 輸入表單：放大字體與高度 */
+        /* --- 輸入表單 自適應設計 --- */
         .add-form {
             display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr;
-            gap: 12px;
+            grid-template-columns: 1.5fr 1fr 1fr; /* 電腦版三欄 */
+            gap: 15px;
             background: var(--header-bg);
             padding: 20px;
             border-radius: 8px;
@@ -92,7 +92,7 @@
         }
 
         .form-group label {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             margin-bottom: 8px;
             font-weight: bold;
             display: block;
@@ -102,7 +102,7 @@
             padding: 15px 10px;
             border: 2px solid var(--border-color);
             border-radius: 6px;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             width: 100%;
             box-sizing: border-box;
             background-color: #fff8e1;
@@ -112,7 +112,7 @@
             grid-column: span 3;
             background-color: #c62828;
             color: white;
-            padding: 20px;
+            padding: 18px;
             font-size: 1.6rem;
             border: none;
             border-radius: 8px;
@@ -121,44 +121,29 @@
             margin-top: 5px;
         }
 
-        /* 表格區：放大比例，減少空白 */
+        /* --- 表格區 自適應設計 --- */
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        th { background-color: var(--border-color); color: white; padding: 15px 5px; font-size: 1.2rem; }
-        td { border-bottom: 1px solid rgba(166, 124, 82, 0.3); padding: 18px 5px; text-align: center; font-size: 1.2rem; }
+        th { background-color: var(--border-color); color: white; padding: 15px 5px; font-size: 1.1rem; }
+        td { border-bottom: 1px solid rgba(166, 124, 82, 0.3); padding: 18px 5px; text-align: center; font-size: 1.1rem; }
 
-        .boss-name { font-weight: bold; font-size: 1.4rem; }
-        .kill-time { font-size: 1.2rem; color: var(--text-main); font-weight: bold; }
+        .boss-name { font-weight: bold; font-size: 1.3rem; }
+        .kill-time { font-size: 1.1rem; color: #7d5a50; font-weight: bold; }
 
-        /* 狀態顏色：僅字體變紅 */
-        .status-ready-text {
-            color: var(--pure-red) !important;
-            font-weight: 900;
-            font-size: 1.5rem;
-        }
+        /* 狀態顏色 */
+        .status-ready-text { color: var(--pure-red) !important; font-weight: 900; font-size: 1.4rem; }
+        .status-wait { color: var(--chrono-green); font-weight: bold; font-size: 1.2rem; }
+        .status-urgent { color: var(--pure-red); font-weight: 900; font-size: 1.5rem; }
 
-        .status-wait {
-            color: var(--chrono-green);
-            font-weight: bold;
-            font-size: 1.3rem;
-        }
-
-        .status-urgent {
-            color: var(--pure-red);
-            font-weight: 900;
-            font-size: 1.6rem;
-        }
-
-        /* 操作按鈕：加大 */
         .btn-re-kill {
             background-color: #4e342e;
             color: white;
             border: none;
-            padding: 18px 10px;
+            padding: 15px 10px;
             border-radius: 5px;
             width: 100%;
             margin-bottom: 10px;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
         }
 
@@ -166,11 +151,35 @@
             background-color: #b0bec5;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 8px;
             border-radius: 5px;
             width: 100%;
-            font-size: 15px;
+            font-size: 14px;
             cursor: pointer;
+        }
+
+        /* =========================================
+           手機版專用排版 (螢幕寬度 600px 以下)
+           ========================================= */
+        @media screen and (max-width: 600px) {
+            .container { max-width: 98%; padding: 10px; }
+            h2 { font-size: 1.8rem; }
+            
+            /* 表單改為垂直堆疊 */
+            .add-form {
+                grid-template-columns: 1fr; /* 變成一欄 */
+                padding: 15px;
+            }
+            .btn-add { grid-column: span 1; }
+
+            /* 隱藏擊殺時間，讓出空間給重生倒數 */
+            .hide-mobile { display: none; }
+            
+            /* 縮小一點按鈕字體防止爆版 */
+            .btn-preset { padding: 12px 5px; font-size: 1rem; }
+            td, th { padding: 10px 2px; font-size: 1rem; }
+            .boss-name { font-size: 1.1rem; }
+            .status-ready-text, .status-urgent { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -200,14 +209,13 @@
             <tr>
                 <th width="25%">狩獵目標</th>
                 <th width="15%">頻道</th>
-                <th width="20%">擊殺時間</th>
-                <th width="20%">預計重生</th>
+                <th width="20%" class="hide-mobile">擊殺時間</th> <th width="20%">預計重生</th>
                 <th width="20%">操作</th>
             </tr>
         </thead>
         <tbody id="bossList"></tbody>
     </table>
-    <p style="font-size: 15px; color: #7f8c8d; text-align: right; margin-top: 30px; font-weight: bold;">
+    <p style="font-size: 13px; color: #7f8c8d; text-align: right; margin-top: 25px; font-weight: bold;">
         * 20 分鐘後自動移除紀錄 | chrono story C服專用
     </p>
 </div>
@@ -266,7 +274,7 @@
             row.innerHTML = `
                 <td class="boss-name">${b.name}</td>
                 <td><strong>${b.ch}</strong> CH</td>
-                <td class="kill-time">${formatTime(b.lastKill)}</td>
+                <td class="kill-time hide-mobile">${formatTime(b.lastKill)}</td> 
                 <td id="timer-${b.id}" class="status-wait">...</td>
                 <td>
                     <button class="btn-re-kill" onclick="killBoss('${b.id}')">再次擊殺</button>
