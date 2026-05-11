@@ -35,7 +35,6 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
-        /* 標題區 */
         .header-area {
             display: flex;
             align-items: center;
@@ -59,7 +58,6 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
 
-        /* 快捷按鈕區 */
         .preset-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -71,18 +69,17 @@
             background-color: #8d6e63;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 15px 10px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             flex-grow: 1;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
         }
 
-        /* --- 輸入表單 自適應設計 --- */
         .add-form {
             display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr; /* 電腦版三欄 */
+            grid-template-columns: 1.5fr 1fr 1fr;
             gap: 15px;
             background: var(--header-bg);
             padding: 20px;
@@ -121,7 +118,7 @@
             margin-top: 5px;
         }
 
-        /* --- 表格區 自適應設計 --- */
+        /* 表格區 */
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         th { background-color: var(--border-color); color: white; padding: 15px 5px; font-size: 1.1rem; }
         td { border-bottom: 1px solid rgba(166, 124, 82, 0.3); padding: 18px 5px; text-align: center; font-size: 1.1rem; }
@@ -129,7 +126,6 @@
         .boss-name { font-weight: bold; font-size: 1.3rem; }
         .kill-time { font-size: 1.1rem; color: #7d5a50; font-weight: bold; }
 
-        /* 狀態顏色 */
         .status-ready-text { color: var(--pure-red) !important; font-weight: 900; font-size: 1.4rem; }
         .status-wait { color: var(--chrono-green); font-weight: bold; font-size: 1.2rem; }
         .status-urgent { color: var(--pure-red); font-weight: 900; font-size: 1.5rem; }
@@ -158,28 +154,20 @@
             cursor: pointer;
         }
 
-        /* =========================================
-           手機版專用排版 (螢幕寬度 600px 以下)
-           ========================================= */
+        /* 手機版適配：不隱藏欄位，但縮減文字與間距 */
         @media screen and (max-width: 600px) {
             .container { max-width: 98%; padding: 10px; }
             h2 { font-size: 1.8rem; }
-            
-            /* 表單改為垂直堆疊 */
-            .add-form {
-                grid-template-columns: 1fr; /* 變成一欄 */
-                padding: 15px;
-            }
+            .add-form { grid-template-columns: 1fr; padding: 15px; }
             .btn-add { grid-column: span 1; }
 
-            /* 隱藏擊殺時間，讓出空間給重生倒數 */
-            .hide-mobile { display: none; }
-            
-            /* 縮小一點按鈕字體防止爆版 */
-            .btn-preset { padding: 12px 5px; font-size: 1rem; }
-            td, th { padding: 10px 2px; font-size: 1rem; }
-            .boss-name { font-size: 1.1rem; }
-            .status-ready-text, .status-urgent { font-size: 1.2rem; }
+            /* 縮減表格寬度 */
+            th, td { padding: 10px 1px; font-size: 0.95rem; }
+            .boss-name { font-size: 1rem; }
+            .kill-time { font-size: 0.9rem; }
+            .status-ready-text, .status-urgent { font-size: 1.1rem; }
+            .status-wait { font-size: 1rem; }
+            .btn-preset { padding: 10px 5px; font-size: 1rem; }
         }
     </style>
 </head>
@@ -207,9 +195,10 @@
     <table>
         <thead>
             <tr>
-                <th width="25%">狩獵目標</th>
-                <th width="15%">頻道</th>
-                <th width="20%" class="hide-mobile">擊殺時間</th> <th width="20%">預計重生</th>
+                <th width="24%">狩獵目標</th>
+                <th width="14%">頻道</th>
+                <th width="18%">擊殺時間</th>
+                <th width="24%">預計重生</th>
                 <th width="20%">操作</th>
             </tr>
         </thead>
@@ -274,7 +263,7 @@
             row.innerHTML = `
                 <td class="boss-name">${b.name}</td>
                 <td><strong>${b.ch}</strong> CH</td>
-                <td class="kill-time hide-mobile">${formatTime(b.lastKill)}</td> 
+                <td class="kill-time">${formatTime(b.lastKill)}</td> 
                 <td id="timer-${b.id}" class="status-wait">...</td>
                 <td>
                     <button class="btn-re-kill" onclick="killBoss('${b.id}')">再次擊殺</button>
