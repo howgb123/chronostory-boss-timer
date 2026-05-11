@@ -3,45 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>楓之谷打王即時同步計時器</title>
+    <title>Chrono Story - Boss 狩獵助手</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #3498db; --danger: #e74c3c; --success: #2ecc71; --dark: #2c3e50; }
-        body { font-family: "Microsoft JhengHei", sans-serif; background: #f4f7f6; padding: 10px; margin: 0; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        h2 { text-align: center; color: var(--dark); margin-bottom: 15px; font-size: 1.5rem; }
-        
-        /* 快捷按鈕 */
-        .preset-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; background: #fff; padding: 10px; border: 1px dashed #ccc; border-radius: 10px; }
-        .btn-preset { background: var(--success); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; flex-grow: 1; }
-        
-        /* 表單 */
-        .add-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-size: 12px; margin-bottom: 5px; color: #7f8c8d; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; }
-        .btn-add { grid-column: span 3; background: var(--danger); color: white; padding: 15px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        :root {
+            --bg-color: #f6ebd5;
+            --border-color: #a67c52;
+            --header-bg: #ffe0a3;
+            --text-main: #5d4037;
+            --chrono-green: #388e3c;
+            --pure-red: #FF0000;
+        }
 
-        /* 表格列表 */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th { background: var(--dark); color: white; padding: 12px 5px; }
-        td { border-bottom: 1px solid #eee; padding: 15px 5px; text-align: center; }
-        
-        /* 倒數狀態顏色 */
-        .status-ready { background-color: #fff2f2; color: var(--danger); font-weight: bold; animation: blink 1s infinite; }
-        .status-wait { color: var(--primary); font-weight: bold; font-size: 1.1rem; }
-        
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #dfd3c3;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png');
+            padding: 8px;
+            margin: 0;
+            color: var(--text-main);
+        }
 
-        .btn-re-kill { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 5px; width: 100%; margin-bottom: 5px; font-weight: bold; }
-        .btn-del { background: #bdc3c7; color: white; border: none; padding: 5px; border-radius: 5px; width: 100%; font-size: 11px; }
+        .container {
+            max-width: 95%;
+            margin: 5px auto;
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 10px;
+            border: 4px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* 標題區：圖示與文字對齊 */
+        .header-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .header-icon {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+        }
+
+        h2 {
+            color: var(--chrono-green);
+            margin: 0;
+            font-size: 2.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* 快捷按鈕區 */
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-preset {
+            background-color: #8d6e63;
+            color: white;
+            border: none;
+            padding: 15px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            flex-grow: 1;
+            font-size: 1.2rem;
+        }
+
+        /* 輸入表單：放大字體與高度 */
+        .add-form {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            gap: 12px;
+            background: var(--header-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 2px solid var(--border-color);
+        }
+
+        .form-group label {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            font-weight: bold;
+            display: block;
+        }
+
+        input {
+            padding: 15px 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1.4rem;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #fff8e1;
+        }
+
+        .btn-add {
+            grid-column: span 3;
+            background-color: #c62828;
+            color: white;
+            padding: 20px;
+            font-size: 1.6rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* 表格區：放大比例，減少空白 */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        th { background-color: var(--border-color); color: white; padding: 15px 5px; font-size: 1.2rem; }
+        td { border-bottom: 1px solid rgba(166, 124, 82, 0.3); padding: 18px 5px; text-align: center; font-size: 1.2rem; }
+
+        .boss-name { font-weight: bold; font-size: 1.4rem; }
+        .kill-time { font-size: 1.2rem; color: var(--text-main); font-weight: bold; }
+
+        /* 狀態顏色：僅字體變紅 */
+        .status-ready-text {
+            color: var(--pure-red) !important;
+            font-weight: 900;
+            font-size: 1.5rem;
+        }
+
+        .status-wait {
+            color: var(--chrono-green);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .status-urgent {
+            color: var(--pure-red);
+            font-weight: 900;
+            font-size: 1.6rem;
+        }
+
+        /* 操作按鈕：加大 */
+        .btn-re-kill {
+            background-color: #4e342e;
+            color: white;
+            border: none;
+            padding: 18px 10px;
+            border-radius: 5px;
+            width: 100%;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .btn-del {
+            background-color: #b0bec5;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 15px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Boss 重生儀表板</h2>
+    <div class="header-area">
+        <img src="https://i.postimg.cc/63gzwwmN/Adobe-Express-file.png" class="header-icon" alt="icon">
+        <h2>Chrono Boss 狩獵名單</h2>
+    </div>
     
     <div class="preset-buttons">
         <button class="btn-preset" onclick="setPreset('黑人馬王', 10)">黑人馬</button>
@@ -51,23 +190,26 @@
 
     <div class="add-form">
         <div class="form-group"><label>王名</label><input type="text" id="bossName"></div>
-        <div class="form-group"><label>頻道</label><input type="number" id="channel" pattern="\d*"></div>
-        <div class="form-group"><label>分鐘</label><input type="number" id="respawnMin"></div>
-        <button class="btn-add" onclick="addNewBoss()">擊殺 (新增)</button>
+        <div class="form-group"><label>頻道</label><input type="number" id="channel"></div>
+        <div class="form-group"><label>重生 (分鐘)</label><input type="number" id="respawnMin"></div>
+        <button class="btn-add" onclick="addNewBoss()">登錄狩獵紀錄</button>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th width="20%">王</th>
-                <th width="15%">頻</th>
-                <th width="20%">擊殺</th>
-                <th width="25%">倒數</th>
+                <th width="25%">狩獵目標</th>
+                <th width="15%">頻道</th>
+                <th width="20%">擊殺時間</th>
+                <th width="20%">預計重生</th>
                 <th width="20%">操作</th>
             </tr>
         </thead>
         <tbody id="bossList"></tbody>
     </table>
+    <p style="font-size: 15px; color: #7f8c8d; text-align: right; margin-top: 30px; font-weight: bold;">
+        * 20 分鐘後自動移除紀錄 | chrono story C服專用
+    </p>
 </div>
 
 <script>
@@ -97,13 +239,13 @@
         const name = document.getElementById('bossName').value;
         const ch = document.getElementById('channel').value;
         const min = document.getElementById('respawnMin').value;
-        if(!name || !ch || !min) return alert("請填寫頻道！");
+        if(!name || !ch || !min) return alert("填寫完整！");
         db.ref('bosses').push({ name, ch, respawnMin: parseInt(min), lastKill: Date.now() });
         document.getElementById('channel').value = "";
     }
 
     function killBoss(id) { db.ref('bosses/' + id).update({ lastKill: Date.now() }); }
-    function deleteBoss(id) { if(confirm("刪除？")) db.ref('bosses/' + id).remove(); }
+    function deleteBoss(id) { db.ref('bosses/' + id).remove(); }
 
     db.ref('bosses').on('value', (snap) => {
         const data = snap.val();
@@ -121,14 +263,13 @@
 
         arr.forEach((b) => {
             const row = document.createElement('tr');
-            row.id = `row-${b.id}`;
             row.innerHTML = `
-                <td><strong>${b.name}</strong></td>
-                <td>${b.ch}頻</td>
-                <td style="font-size:12px; color:#999">${formatTime(b.lastKill)}</td>
-                <td class="status-wait" id="timer-${b.id}">...</td>
+                <td class="boss-name">${b.name}</td>
+                <td><strong>${b.ch}</strong> CH</td>
+                <td class="kill-time">${formatTime(b.lastKill)}</td>
+                <td id="timer-${b.id}" class="status-wait">...</td>
                 <td>
-                    <button class="btn-re-kill" onclick="killBoss('${b.id}')">擊殺</button>
+                    <button class="btn-re-kill" onclick="killBoss('${b.id}')">再次擊殺</button>
                     <button class="btn-del" onclick="deleteBoss('${b.id}')">刪除</button>
                 </td>
             `;
@@ -140,7 +281,6 @@
     function startTimer(id, next, lastKill) {
         const update = () => {
             const el = document.getElementById(`timer-${id}`);
-            const row = document.getElementById(`row-${id}`);
             if (!el) return;
             const now = Date.now();
             if (now - lastKill > 1200000) { deleteBoss(id); return; }
@@ -148,13 +288,13 @@
             const diff = next - now;
             if (diff <= 0) {
                 el.innerText = "★ 已重生 ★";
-                row.className = "status-ready";
+                el.className = "status-ready-text"; 
                 clearInterval(activeTimers[id]);
             } else {
                 const m = Math.floor(diff / 60000);
                 const s = Math.floor((diff % 60000) / 1000);
                 el.innerText = `${m}m ${s}s`;
-                if (diff < 60000) el.style.color = "red";
+                el.className = (diff < 60000) ? "status-urgent" : "status-wait";
             }
         };
         update();
